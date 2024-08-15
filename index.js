@@ -35,26 +35,27 @@ async function run() {
         app.get("/products", async (req, res) => {
             const search = req.query.search
             // console.log(search)
-            let searchStage
+            const agg = [
+
+            ]
             if (search?.trim()?.length > 2) {
-                searchStage = {
-                    $search: {
-                        index: "default",
-                        text: {
-                            query: search,
-                            path: {
-                                wildcard: "*",
+                agg.splice(
+                    0, 0,
+                    {
+                        $search: {
+                            index: "default",
+                            text: {
+                                query: search,
+                                path: {
+                                    wildcard: "*",
+                                },
                             },
                         },
-                    },
-                }
+                    }
+                )
             }
 
-            const result = await productsColl.aggregate(
-                [
-                    search ? searchStage : { $match: {} }
-                ]
-            ).toArray();
+            const result = await productsColl.aggregate(agg).toArray();
             res.status(200).send(result)
         })
 
