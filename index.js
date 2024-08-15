@@ -1,0 +1,71 @@
+require("dotenv").config()
+const express = require('express')
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
+const jwt = require("jsonwebtoken")
+const cookieParser = require('cookie-parser')
+const cors = require("cors")
+const app = express()
+const port = process.env.PORT || 5000;
+
+// middlewares
+app.use(cors({
+    origin: ["http://localhost:5173", "https://mhvocabulary.vercel.app"], credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
+}))
+app.use(express.json())
+app.use(cookieParser())
+
+// const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@cluster0.jt5df8u.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
+const uri = "mongodb://localhost:27017";
+
+const client = new MongoClient(uri, {
+    serverApi: {
+        version: ServerApiVersion.v1,
+        deprecationErrors: true,
+    }
+});
+
+const db = client.db("mhStore")
+const productsColl = db.collection("products")
+
+async function run() {
+    try {
+
+        // get products 
+        app.get("/products", async (req, res) => {
+            const result = await productsColl.find().toArray()
+            res.status(200).send(result)
+        })
+
+        // Send a ping to confirm a successful connection
+        await client.db("admin").command({ ping: 1 });
+        console.log("Pinged your deployment. You successfully connected to MongoDB!");
+    }
+    finally {
+        // hello world
+    }
+}
+run().catch(console.dir);
+
+app.get('/', (req, res) => {
+    res.send('Hello World!')
+})
+
+app.listen(port, () => {
+    console.log(`Example app listening on port ${port}`)
+})
+
+// utils
+async function generateToken(name, email, _id) {
+    const token = jwt.sign(
+        { name, email, _id },
+        process.env.JWT_SECRET,
+        { expiresIn: "12h" }
+    )
+    return token
+}
+const cookieOptions = {
+    httpOnly: true,
+    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
+    secure: process.env.NODE_ENV === 'production' ? true : false
+}
