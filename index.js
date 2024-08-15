@@ -26,7 +26,7 @@ const client = new MongoClient(uri, {
 });
 
 const db = client.db("mhStore")
-const productsColl = db.collection("products");
+const productColl = db.collection("products");
 const userColl = db.collection("users")
 
 async function run() {
@@ -55,24 +55,23 @@ async function run() {
                 )
             }
             // Perform aggregation
-            const result = await productsColl.aggregate(agg).toArray();
+            const result = await productColl.aggregate(agg).toArray();
             res.status(200).send(result)
         })
-
-        // // authentication apis
-        // app.post("/auth/sign-up", async (req, res) => {
-        //     const { displayName, email } = req.body;
-        //     if (!displayName || !email) {
-        //         return res.status(400).send("all fields are required")
-        //     }
-        //     const result = await userColl.insertOne({ displayName, email })
-        //     const token = jwt.sign(
-        //         { displayName, email },
-        //         process.env.ACCESS_TOKE_SECRET,
-        //         { expiresIn: "10d" }
-        //     )
-        //     res.status(200).send({ result, token })
-        // })
+        // add a new products
+        app.post("/products/add-new", async (req, res) => {
+            const { brand, category, description, price, productImage, productName, released } = req.body;
+            if (!brand || !category || !description || !price || !productImage || !productName || !released) {
+                return res.status(400).send("all fields are required")
+            }
+            const result = await productColl.insertOne(
+                {
+                    brand, category, description, price, productImage, productName, released,
+                    createdAt: new Date()
+                }
+            )
+            res.send(result)
+        })
 
         // Send a ping to confirm a successful connection
         await client.db("admin").command({ ping: 1 });
@@ -106,3 +105,22 @@ const cookieOptions = {
     sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
     secure: process.env.NODE_ENV === 'production' ? true : false
 }
+
+
+/* 
+// // authentication apis
+// app.post("/auth/sign-up", async (req, res) => {
+//     const { displayName, email } = req.body;
+//     if (!displayName || !email) {
+//         return res.status(400).send("all fields are required")
+//     }
+//     const result = await userColl.insertOne({ displayName, email })
+//     const token = jwt.sign(
+//         { displayName, email },
+//         process.env.ACCESS_TOKE_SECRET,
+//         { expiresIn: "10d" }
+//     )
+//     res.status(200).send({ result, token })
+// })
+
+*/
