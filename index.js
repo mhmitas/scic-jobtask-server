@@ -15,8 +15,8 @@ app.use(cors({
 app.use(express.json())
 app.use(cookieParser())
 
-// const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@cluster0.jt5df8u.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
-const uri = "mongodb://localhost:27017";
+const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@cluster0.jt5df8u.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
+// const uri = "mongodb://localhost:27017";
 
 const client = new MongoClient(uri, {
     serverApi: {
@@ -33,7 +33,28 @@ async function run() {
 
         // get products 
         app.get("/products", async (req, res) => {
-            const result = await productsColl.find().toArray()
+            const search = req.query.search
+            // console.log(search)
+            let searchStage
+            if (search?.trim()?.length > 2) {
+                searchStage = {
+                    $search: {
+                        index: "default",
+                        text: {
+                            query: search,
+                            path: {
+                                wildcard: "*",
+                            },
+                        },
+                    },
+                }
+            }
+
+            const result = await productsColl.aggregate(
+                [
+                    search ? searchStage : { $match: {} }
+                ]
+            ).toArray();
             res.status(200).send(result)
         })
 
