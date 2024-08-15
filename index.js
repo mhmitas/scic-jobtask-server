@@ -33,12 +33,11 @@ async function run() {
 
         // get products 
         app.get("/products", async (req, res) => {
-            const search = req.query.search
+            const search = req.query.search?.trim()
             // console.log(search)
-            const agg = [
-
-            ]
-            if (search?.trim()?.length > 2) {
+            const agg = []
+            // Check if search query is valid (at least 3 characters)
+            if (search && search.length > 2) {
                 agg.splice(
                     0, 0,
                     {
@@ -54,7 +53,7 @@ async function run() {
                     }
                 )
             }
-
+            // Perform aggregation
             const result = await productsColl.aggregate(agg).toArray();
             res.status(200).send(result)
         })
