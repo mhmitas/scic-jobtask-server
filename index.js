@@ -32,6 +32,12 @@ const userColl = db.collection("users")
 async function run() {
     try {
 
+        // productColl.updateMany({ category: "laptop" }, {
+        //     $set: {
+        //         productImage: "https://res.cloudinary.com/dquqygs9h/image/upload/v1723730793/wufyiruy4xxleymgfqps.png"
+        //     }
+        // }).then(res => console.log(res))
+
         // get products 
         app.get("/products", async (req, res) => {
             const search = req.query.search?.trim()
@@ -58,6 +64,18 @@ async function run() {
             const result = await productColl.aggregate(agg).toArray();
             res.status(200).send(result)
         })
+        // get a product
+        app.get("/products/product/:id", async (req, res) => {
+            const id = req.params?.id
+            if (!ObjectId.isValid(id)) {
+                return res.status(400).send("Invalid object id")
+            }
+            const product = await productColl.findOne({ _id: new ObjectId(id) })
+            if (!product) {
+                return res.status(404).send("Product not found")
+            }
+            res.status(200).send(product)
+        })
         // add a new products
         app.post("/products/add-new", async (req, res) => {
             const { brand, category, description, price, productImage, productName, released } = req.body;
@@ -66,7 +84,7 @@ async function run() {
             }
             const result = await productColl.insertOne(
                 {
-                    brand, category, description, price, productImage, productName, released,
+                    brand, category, description, price, productImage, productName, released: new Date(released),
                     createdAt: new Date()
                 }
             )
