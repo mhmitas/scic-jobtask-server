@@ -72,6 +72,9 @@ async function run() {
             }
             // Perform aggregation
             const totalProducts = await productColl.aggregate(agg).toArray();
+            if (totalProducts.length === 0) {
+                return res.status(200).send({ totalProducts: 0 })
+            }
             res.status(200).send(totalProducts[0])
         })
         // get products 
