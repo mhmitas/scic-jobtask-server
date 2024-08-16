@@ -38,11 +38,21 @@ async function run() {
         //     }
         // }).then(res => console.log(res))
 
-        // get products 
-        app.get("/products", async (req, res) => {
+        // get total products count 
+        app.get("/total-products", async (req, res) => {
             const search = req.query.search?.trim()
-            // console.log(search)
-            const agg = []
+            let category = {};
+            if (req.query?.category && req.query?.category?.trim()) {
+                category = { category: req.query.category.trim() }
+            }
+            const agg = [
+                {
+                    $match: { ...category }
+                },
+                {
+                    $count: "totalProducts"
+                }
+            ]
             // Check if search query is valid (at least 3 characters)
             if (search && search.length > 2) {
                 agg.splice(
@@ -61,8 +71,60 @@ async function run() {
                 )
             }
             // Perform aggregation
-            const result = await productColl.aggregate(agg).toArray();
-            res.status(200).send(result)
+            const totalProducts = await productColl.aggregate(agg).toArray();
+            res.status(200).send(totalProducts[0])
+        })
+        // get products 
+        app.get("/products", async (req, res) => {
+            const search = req.query.search?.trim()
+            let sort = { released: -1 }
+            let category = {};
+            let limit = parseInt(req.query?.limit) || 12
+            let skip = parseInt(req.query?.skip) || 0
+            console.log({ limit, skip })
+            if (req.query.sort === "priceHighToLow") {
+                sort = { price: -1 }
+            }
+            if (req.query.sort === "priceLowToHigh") {
+                sort = { price: 1 }
+            }
+            if (req.query?.category && req.query?.category?.trim()) {
+                category = { category: req.query.category.trim() }
+            }
+            const agg = [
+                {
+                    $match: { ...category }
+                },
+                {
+                    $sort: sort
+                },
+                {
+                    $skip: skip
+                },
+                {
+                    $limit: limit
+                }
+            ]
+            // Check if search query is valid (at least 3 characters)
+            if (search && search.length > 2) {
+                agg.splice(
+                    0, 0,
+                    {
+                        $search: {
+                            index: "default",
+                            text: {
+                                query: search,
+                                path: {
+                                    wildcard: "*",
+                                },
+                            },
+                        },
+                    }
+                )
+            }
+            // Perform aggregation
+            const products = await productColl.aggregate(agg).toArray();
+            res.status(200).send(products)
         })
         // get a product
         app.get("/products/product/:id", async (req, res) => {
