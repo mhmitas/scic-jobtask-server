@@ -178,11 +178,11 @@ app.listen(port, () => {
 })
 
 // utils
-async function generateToken(name, email, _id) {
+async function generateToken(name, email, _id, type) {
     const token = jwt.sign(
-        { name, email, _id },
-        process.env.JWT_SECRET,
-        { expiresIn: "12h" }
+        { name, email, _id, type },
+        process.env.ACCESS_TOKE_SECRET,
+        { expiresIn: "10d" }
     )
     return token
 }
@@ -194,19 +194,6 @@ const cookieOptions = {
 
 
 /* 
-// // authentication apis
-// app.post("/auth/sign-up", async (req, res) => {
-//     const { displayName, email } = req.body;
-//     if (!displayName || !email) {
-//         return res.status(400).send("all fields are required")
-//     }
-//     const result = await userColl.insertOne({ displayName, email })
-//     const token = jwt.sign(
-//         { displayName, email },
-//         process.env.ACCESS_TOKE_SECRET,
-//         { expiresIn: "10d" }
-//     )
-//     res.status(200).send({ result, token })
-// })
+
 
 */
