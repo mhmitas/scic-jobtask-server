@@ -39,6 +39,7 @@ async function run() {
         //     }
         // }).then(res => console.log(res))
 
+        // ! think before touch this api
         // get total products count 
         app.get("/total-products", async (req, res) => {
             const search = req.query.search?.trim()
@@ -81,37 +82,38 @@ async function run() {
         // get products 
         app.get("/products", async (req, res) => {
             const search = req.query.search?.trim()
-            let sort = { released: -1 }
             let category = {};
+            // skip and limit
             let limit = parseInt(req.query?.limit) || 12
             let skip = parseInt(req.query?.skip) || 0
             // console.log({ limit, skip })
-            if (req.query.sort === "priceHighToLow") {
-                sort = { price: -1 }
-            }
-            if (req.query.sort === "priceLowToHigh") {
-                sort = { price: 1 }
-            }
+
             if (req.query?.category && req.query?.category?.trim()) {
                 category = { category: req.query.category.trim() }
             }
-            const agg = [
+            const pipeline = [
                 {
                     $match: { ...category }
-                },
-                {
-                    $sort: sort
-                },
-                {
-                    $skip: skip
-                },
-                {
-                    $limit: limit
                 }
             ]
+            // conditionally add stages
+            if (req.query?.sort === "priceHighToLow") {
+                sort = { $sort: { price: -1 } }
+                pipeline.push(sort)
+            }
+            if (req.query?.sort === "priceLowToHigh") {
+                sort = { $sort: { price: 1 } }
+                pipeline.push(sort)
+            }
+            if (req.query?.sort === "releasedDate") {
+                sort = { $sort: { released: -1 } };
+                pipeline.push(sort)
+            }
+            pipeline.push({ $skip: skip })
+            pipeline.push({ $limit: limit })
             // Check if search query is valid (at least 3 characters)
             if (search && search.length > 2) {
-                agg.splice(
+                pipeline.splice(
                     0, 0,
                     {
                         $search: {
@@ -127,7 +129,7 @@ async function run() {
                 )
             }
             // Perform aggregation
-            const products = await productColl.aggregate(agg).toArray();
+            const products = await productColl.aggregate(pipeline).toArray();
             res.status(200).send(products)
         })
         // get a product
