@@ -81,7 +81,7 @@ async function run() {
             let category = {};
             let limit = parseInt(req.query?.limit) || 12
             let skip = parseInt(req.query?.skip) || 0
-            console.log({ limit, skip })
+            // console.log({ limit, skip })
             if (req.query.sort === "priceHighToLow") {
                 sort = { price: -1 }
             }
