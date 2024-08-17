@@ -47,9 +47,14 @@ async function run() {
             if (req.query?.category && req.query?.category?.trim()) {
                 category = { category: req.query.category.trim() }
             }
+            const minPrice = parseInt(req.query?.minPrice) || 0
+            const maxPrice = parseInt(req.query?.maxPrice) || 3000
+            const priceQ = {
+                price: { $gt: minPrice, $lt: maxPrice }
+            }
             const agg = [
                 {
-                    $match: { ...category }
+                    $match: { ...category, ...priceQ }
                 },
                 {
                     $count: "totalProducts"
@@ -86,14 +91,18 @@ async function run() {
             // skip and limit
             let limit = parseInt(req.query?.limit) || 12
             let skip = parseInt(req.query?.skip) || 0
-            // console.log({ limit, skip })
 
             if (req.query?.category && req.query?.category?.trim()) {
                 category = { category: req.query.category.trim() }
             }
+            const minPrice = parseInt(req.query?.minPrice) || 0
+            const maxPrice = parseInt(req.query?.maxPrice) || 3000
+            const priceQ = {
+                price: { $gt: minPrice, $lt: maxPrice }
+            }
             const pipeline = [
                 {
-                    $match: { ...category }
+                    $match: { ...category, ...priceQ }
                 }
             ]
             // conditionally add stages
