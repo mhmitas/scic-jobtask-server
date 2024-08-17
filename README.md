@@ -1,4 +1,4 @@
-# This is a simple tech gadgets store website's backend. 
+# This is a tech gadgets store website's backend. 
 
 **This server is built to provide a robust user experience. users can find tech gadgets like smartphones, smartwatches, laptops, tablets, computers, etc.
 Some features of this website are pagination, searching, categorization, and sorting of products.**
