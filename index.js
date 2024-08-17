@@ -47,6 +47,11 @@ async function run() {
             if (req.query?.category && req.query?.category?.trim()) {
                 category = { category: req.query.category.trim() }
             }
+            let brand = {};
+            if (req.query?.brand && req.query?.brand?.trim()) {
+                brand = { brand: req.query.brand.trim() }
+            }
+            console.log(brand)
             const minPrice = parseInt(req.query?.minPrice) || 0
             const maxPrice = parseInt(req.query?.maxPrice) || 3000
             const priceQ = {
@@ -54,7 +59,7 @@ async function run() {
             }
             const agg = [
                 {
-                    $match: { ...category, ...priceQ }
+                    $match: { ...category, ...brand, ...priceQ }
                 },
                 {
                     $count: "totalProducts"
@@ -84,16 +89,21 @@ async function run() {
             }
             res.status(200).send(totalProducts[0])
         })
+        // Mountain of Query
         // get products 
         app.get("/products", async (req, res) => {
             const search = req.query.search?.trim()
             let category = {};
+            let brand = {};
             // skip and limit
             let limit = parseInt(req.query?.limit) || 12
             let skip = parseInt(req.query?.skip) || 0
 
             if (req.query?.category && req.query?.category?.trim()) {
                 category = { category: req.query.category.trim() }
+            }
+            if (req.query?.brand && req.query?.brand?.trim()) {
+                brand = { brand: req.query.brand.trim() }
             }
             const minPrice = parseInt(req.query?.minPrice) || 0
             const maxPrice = parseInt(req.query?.maxPrice) || 3000
@@ -102,7 +112,7 @@ async function run() {
             }
             const pipeline = [
                 {
-                    $match: { ...category, ...priceQ }
+                    $match: { ...category, ...brand, ...priceQ }
                 }
             ]
             // conditionally add stages
