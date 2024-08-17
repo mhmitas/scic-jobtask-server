@@ -24,4 +24,4 @@ Make sure you have the following installed on your machine:
    ('crypto').randomBytes(64).toString('hex')
    ```
 5. Go to MongoDB and take your MongoDB connection URI, then go index.js file and add this URI.
-6. run `npm i` and run `npm run dev`
+6. run `npm i` and run `node index.js`
