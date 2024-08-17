@@ -51,7 +51,6 @@ async function run() {
             if (req.query?.brand && req.query?.brand?.trim()) {
                 brand = { brand: req.query.brand.trim() }
             }
-            console.log(brand)
             const minPrice = parseInt(req.query?.minPrice) || 0
             const maxPrice = parseInt(req.query?.maxPrice) || 3000
             const priceQ = {
